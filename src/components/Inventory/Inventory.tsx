@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, AlertTriangle, Package } from 'lucide-react';
 import { Product } from '../../types';
-import { productsAPI } from '../../services/api';
+import { productsAPI } from '../../services/api.js';
 import { formatCurrency, formatDate, isLowStock, isExpiringSoon } from '../../utils/helpers';
 import { useAuth } from '../../hooks/useAuth';
 import ProductModal from './ProductModal';
@@ -42,14 +42,14 @@ const Inventory: React.FC = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(product =>
-        (product.name?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-        (product.barcode ?? '').includes(searchTerm) ||
-        (product.category?.toLowerCase() ?? '').includes(searchTerm.toLowerCase())
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.barcode.includes(searchTerm) ||
+        product.category.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (categoryFilter) {
-      filtered = filtered.filter(product => (product.category ?? '') === categoryFilter);
+      filtered = filtered.filter(product => product.category === categoryFilter);
     }
 
     setFilteredProducts(filtered);
@@ -64,7 +64,7 @@ const Inventory: React.FC = () => {
         await productsAPI.create(productData);
         toast.success('Product created successfully');
       }
-
+      
       await loadProducts();
       setEditingProduct(undefined);
     } catch (error: any) {
@@ -91,7 +91,7 @@ const Inventory: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const categories = [...new Set(products.map(p => p.category ?? ''))];
+  const categories = [...new Set(products.map(p => p.category))];
 
   if (loading) {
     return (
@@ -150,7 +150,7 @@ const Inventory: React.FC = () => {
             >
               <option value="">All Categories</option>
               {categories.map(category => (
-                <option key={category} value={category}>{category || 'Uncategorized'}</option>
+                <option key={category} value={category}>{category}</option>
               ))}
             </select>
           </div>
@@ -197,42 +197,42 @@ const Inventory: React.FC = () => {
                         <Package className="w-5 h-5 text-gray-600" />
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{product.name ?? 'Unnamed'}</div>
-                        <div className="text-sm text-gray-500">{product.barcode ?? 'N/A'}</div>
+                        <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                        <div className="text-sm text-gray-500">{product.barcode}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">
-                      {product.category ?? 'Uncategorized'}
+                      {product.category}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {formatCurrency(product.price ?? 0)}
+                    {formatCurrency(product.price)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div className="flex items-center">
-                      <span className={`${isLowStock(product.stock ?? 0, product.min_stock ?? 0) ? 'text-red-600' : 'text-gray-900'}`}>
-                        {product.stock ?? 0}
+                      <span className={`${isLowStock(product.stock, product.min_stock) ? 'text-red-600' : 'text-gray-900'}`}>
+                        {product.stock}
                       </span>
-                      {isLowStock(product.stock ?? 0, product.min_stock ?? 0) && (
+                      {isLowStock(product.stock, product.min_stock) && (
                         <AlertTriangle className="w-4 h-4 text-red-500 ml-1" />
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span className={`${isExpiringSoon(product.expiry_date ?? '') ? 'text-red-600' : 'text-gray-900'}`}>
-                      {formatDate(product.expiry_date ?? '')}
+                    <span className={`${isExpiringSoon(product.expiry_date) ? 'text-red-600' : 'text-gray-900'}`}>
+                      {formatDate(product.expiry_date)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex space-x-1">
-                      {isLowStock(product.stock ?? 0, product.min_stock ?? 0) && (
+                      {isLowStock(product.stock, product.min_stock) && (
                         <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
                           Low Stock
                         </span>
                       )}
-                      {isExpiringSoon(product.expiry_date ?? '') && (
+                      {isExpiringSoon(product.expiry_date) && (
                         <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
                           Expiring
                         </span>

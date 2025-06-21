@@ -6,7 +6,7 @@ interface ProductModalProps {
   product?: Product;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSave: (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => void;
 }
 
 const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, onSave }) => {
@@ -16,40 +16,39 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
     category: '',
     price: '',
     stock: '',
-    minStock: '',
-    expiryDate: '',
+    min_stock: '',
+    expiry_date: '',
     supplier: '',
     description: ''
   });
 
   useEffect(() => {
-  if (product) {
-    setFormData({
-      name: product.name ?? '',
-      barcode: product.barcode ?? '',
-      category: product.category ?? '',
-      price: product.price?.toString() ?? '',
-      stock: product.stock?.toString() ?? '',
-      minStock: product.minStock?.toString() ?? 0,
-      expiryDate: product.expiryDate?.split('T')[0] ?? '',
-      supplier: product.supplier ?? '',
-      description: product.description ?? ''
-    });
-  } else {
-    setFormData({
-      name: '',
-      barcode: '',
-      category: '',
-      price: '',
-      stock: '',
-      minStock: '',
-      expiryDate: '',
-      supplier: '',
-      description: ''
-    });
-  }
-}, [product]);
-
+    if (product) {
+      setFormData({
+        name: product.name,
+        barcode: product.barcode,
+        category: product.category,
+        price: product.price.toString(),
+        stock: product.stock.toString(),
+        min_stock: product.min_stock.toString(),
+        expiry_date: product.expiry_date.split('T')[0],
+        supplier: product.supplier,
+        description: product.description
+      });
+    } else {
+      setFormData({
+        name: '',
+        barcode: '',
+        category: '',
+        price: '',
+        stock: '',
+        min_stock: '',
+        expiry_date: '',
+        supplier: '',
+        description: ''
+      });
+    }
+  }, [product]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,8 +58,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
       category: formData.category,
       price: parseFloat(formData.price),
       stock: parseInt(formData.stock),
-      minStock: parseInt(formData.minStock),
-      expiryDate: formData.expiryDate,
+      min_stock: parseInt(formData.min_stock),
+      expiry_date: formData.expiry_date,
       supplier: formData.supplier,
       description: formData.description
     });
@@ -68,7 +67,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
   };
 
   const categories = [
-    'Dairy', 'Bakery', 'Produce', 'Meat', 'Pantry', 'Beverages',
+    'Dairy', 'Bakery', 'Produce', 'Meat', 'Pantry', 'Beverages', 
     'Frozen', 'Personal Care', 'Household', 'Snacks'
   ];
 
@@ -92,12 +91,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Product Name *
               </label>
               <input
-                id="name"
-                name="name"
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -107,12 +104,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
             </div>
 
             <div>
-              <label htmlFor="barcode" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Barcode *
               </label>
               <input
-                id="barcode"
-                name="barcode"
                 type="text"
                 value={formData.barcode}
                 onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
@@ -122,12 +117,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
             </div>
 
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Category *
               </label>
               <select
-                id="category"
-                name="category"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -141,12 +134,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
             </div>
 
             <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Price ($) *
               </label>
               <input
-                id="price"
-                name="price"
                 type="number"
                 step="0.01"
                 value={formData.price}
@@ -157,12 +148,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
             </div>
 
             <div>
-              <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Stock Quantity *
               </label>
               <input
-                id="stock"
-                name="stock"
                 type="number"
                 value={formData.stock}
                 onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
@@ -172,42 +161,36 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
             </div>
 
             <div>
-              <label htmlFor="minStock" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Minimum Stock *
               </label>
               <input
-                id="minStock"
-                name="minStock"
                 type="number"
-                value={formData.minStock}
-                onChange={(e) => setFormData({ ...formData, minStock: e.target.value })}
+                value={formData.min_stock}
+                onChange={(e) => setFormData({ ...formData, min_stock: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Expiry Date *
               </label>
               <input
-                id="expiryDate"
-                name="expiryDate"
                 type="date"
-                value={formData.expiryDate}
-                onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                value={formData.expiry_date}
+                onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="supplier" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Supplier *
               </label>
               <input
-                id="supplier"
-                name="supplier"
                 type="text"
                 value={formData.supplier}
                 onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
@@ -218,12 +201,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Description
             </label>
             <textarea
-              id="description"
-              name="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
