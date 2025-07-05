@@ -1,6 +1,22 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://supermarket-project-production.up.railway.app/api';
+// Determine API base URL based on environment
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    // Client-side
+    if (window.location.hostname === 'localhost') {
+      return 'http://localhost:5000/api';
+    }
+    // Use same origin for production
+    return `${window.location.origin}/api`;
+  }
+  // Server-side fallback
+  return process.env.NODE_ENV === 'production' 
+    ? 'https://supermarket-project-production.up.railway.app/api'
+    : 'http://localhost:5000/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Create axios instance
 const api = axios.create({
@@ -8,6 +24,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 second timeout
 });
 
 // Add token to requests
@@ -19,10 +36,12 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle token expiration
+// Handle token expiration and errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('API Error:', error.response?.data || error.message);
+    
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -34,8 +53,8 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  login: (email, password) => api.post('/auth/login', { email, password }),
-  register: (userData) => api.post('/auth/register', userData),
+  login: (email: string, password: string) => api.post('/auth/login', { email, password }),
+  register: (userData: any) => api.post('/auth/register', userData),
   logout: () => api.post('/auth/logout'),
 };
 
@@ -43,24 +62,24 @@ export const authAPI = {
 export const usersAPI = {
   getAll: () => api.get('/users'),
   getProfile: () => api.get('/users/profile'),
-  updateStatus: (id, is_active) => api.patch(`/users/${id}/status`, { is_active }),
+  updateStatus: (id: string, is_active: boolean) => api.patch(`/users/${id}/status`, { is_active }),
 };
 
 // Products API
 export const productsAPI = {
   getAll: (params = {}) => api.get('/products', { params }),
-  getById: (id) => api.get(`/products/${id}`),
-  create: (productData) => api.post('/products', productData),
-  update: (id, productData) => api.put(`/products/${id}`, productData),
-  delete: (id) => api.delete(`/products/${id}`),
+  getById: (id: string) => api.get(`/products/${id}`),
+  create: (productData: any) => api.post('/products', productData),
+  update: (id: string, productData: any) => api.put(`/products/${id}`, productData),
+  delete: (id: string) => api.delete(`/products/${id}`),
 };
 
 // Sales API
 export const salesAPI = {
   getAll: (params = {}) => api.get('/sales', { params }),
-  getById: (id) => api.get(`/sales/${id}`),
-  create: (saleData) => api.post('/sales', saleData),
-  getDailySummary: (date) => api.get('/sales/summary/daily', { params: { date } }),
+  getById: (id: string) => api.get(`/sales/${id}`),
+  create: (saleData: any) => api.post('/sales', saleData),
+  getDailySummary: (date?: string) => api.get('/sales/summary/daily', { params: { date } }),
 };
 
 // Dashboard API
