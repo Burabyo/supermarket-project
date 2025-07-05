@@ -91,7 +91,7 @@ console.log('✅ API routes registered');
 
 // Serve static files in production - AFTER API routes
 if (process.env.NODE_ENV === 'production') {
-  const distPath = join(__dirname, '../dist');
+  const distPath = join(__dirname, '../client/dist');
   console.log(`📁 Serving static files from: ${distPath}`);
   
   app.use(express.static(distPath));
