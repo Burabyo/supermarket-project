@@ -6,6 +6,13 @@ import { generateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Add logging middleware for auth routes
+router.use((req, res, next) => {
+  console.log(`🔐 Auth Route: ${req.method} ${req.originalUrl}`);
+  console.log(`🔐 Request body:`, req.body);
+  next();
+});
+
 // Register new user
 router.post('/register', [
   body('name').trim().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
@@ -14,8 +21,11 @@ router.post('/register', [
   body('role').isIn(['admin', 'manager', 'cashier']).withMessage('Invalid role')
 ], async (req, res) => {
   try {
+    console.log('📝 Register attempt:', req.body.email);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -28,10 +38,12 @@ router.post('/register', [
     // Check if user already exists
     db.get('SELECT id FROM users WHERE email = ?', [email], async (err, existingUser) => {
       if (err) {
+        console.error('❌ Database error:', err);
         return res.status(500).json({ success: false, message: 'Database error' });
       }
 
       if (existingUser) {
+        console.log('❌ User already exists:', email);
         return res.status(400).json({ 
           success: false, 
           message: 'User with this email already exists' 
@@ -47,16 +59,19 @@ router.post('/register', [
         [name, email, hashedPassword, role],
         function(err) {
           if (err) {
+            console.error('❌ Failed to create user:', err);
             return res.status(500).json({ success: false, message: 'Failed to create user' });
           }
 
           // Get the created user
           db.get('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [this.lastID], (err, user) => {
             if (err) {
+              console.error('❌ Failed to retrieve user:', err);
               return res.status(500).json({ success: false, message: 'User created but failed to retrieve' });
             }
 
             const token = generateToken(user);
+            console.log('✅ User registered successfully:', user.email);
 
             res.status(201).json({
               success: true,
@@ -76,6 +91,7 @@ router.post('/register', [
       );
     });
   } catch (error) {
+    console.error('❌ Registration error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -86,8 +102,11 @@ router.post('/login', [
   body('password').notEmpty().withMessage('Password is required')
 ], async (req, res) => {
   try {
+    console.log('🔑 Login attempt:', req.body.email);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Login validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -99,10 +118,12 @@ router.post('/login', [
 
     db.get('SELECT * FROM users WHERE email = ? AND is_active = 1', [email], async (err, user) => {
       if (err) {
+        console.error('❌ Database error during login:', err);
         return res.status(500).json({ success: false, message: 'Database error' });
       }
 
       if (!user) {
+        console.log('❌ User not found or inactive:', email);
         return res.status(401).json({ 
           success: false, 
           message: 'Invalid email or password' 
@@ -111,6 +132,7 @@ router.post('/login', [
 
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
+        console.log('❌ Invalid password for:', email);
         return res.status(401).json({ 
           success: false, 
           message: 'Invalid email or password' 
@@ -124,6 +146,8 @@ router.post('/login', [
         'INSERT INTO audit_logs (user_id, action, table_name) VALUES (?, ?, ?)',
         [user.id, 'LOGIN', 'users']
       );
+
+      console.log('✅ Login successful:', user.email);
 
       res.json({
         success: true,
@@ -140,16 +164,27 @@ router.post('/login', [
       });
     });
   } catch (error) {
+    console.error('❌ Login error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
 // Logout (client-side token removal, but we log it)
 router.post('/logout', (req, res) => {
-  // In a real app, you might want to blacklist the token
+  console.log('👋 Logout request');
   res.json({
     success: true,
     message: 'Logged out successfully'
+  });
+});
+
+// Test route to verify auth routes are working
+router.get('/test', (req, res) => {
+  console.log('🧪 Auth test route hit');
+  res.json({
+    success: true,
+    message: 'Auth routes are working!',
+    timestamp: new Date().toISOString()
   });
 });
 
